@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teka Teki SMP-SMA</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .game-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .timer-container {
+            height: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        
+        .timer-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff5f6d, #ffc371);
+            width: 100%;
+            transition: width 1s linear;
+        }
+        
+        .question-container {
+            margin-bottom: 30px;
+        }
+        
+        .question-number {
+            color: #764ba2;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .question-text {
+            font-size: 22px;
+            font-weight: 500;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+        
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .option-btn {
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+        
+        .option-btn:hover {
+            background-color: #e9ecef;
+            transform: translateY(-2px);
+        }
+        
+        .option-btn.correct {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .option-btn.incorrect {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .next-btn {
+            background-color: #764ba2;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .next-btn:hover {
+            background-color: #5a3792;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4);
+        }
+        
+        .score-container {
+            text-align: center;
+            display: none;
+        }
+        
+        .score-title {
+            font-size: 28px;
+            color: #764ba2;
+            margin-bottom: 20px;
+        }
+        
+        .score-value {
+            font-size: 72px;
+            font-weight: 700;
+            color: #ff5f6d;
+            margin-bottom: 30px;
+        }
+        
+        .restart-btn {
+            background-color: #ff5f6d;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .restart-btn:hover {
+            background-color: #e04553;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 95, 109, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .options-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .question-text {
+                font-size: 19px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container" id="gameContainer">
+        <div class="timer-container">
+            <div class="timer-progress" id="timer"></div>
+        </div>
+        
+        <div class="question-container" id="questionContainer">
+            <div class="question-number">Pertanyaan <span id="questionNumber">1</span>/20</div>
+            <div class="question-text" id="questionText"></div>
+            
+            <div class="options-container" id="optionsContainer"></div>
+            
+            <button class="next-btn" id="nextBtn">Lanjut</button>
+        </div>
+        
+        <div class="score-container" id="scoreContainer">
+            <div class="score-title">Skor Akhir Kamu</div>
+            <div class="score-value" id="finalScore">0</div>
+            <button class="restart-btn" id="restartBtn">Main Lagi</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Jika 2x + 5 = 15, maka nilai x adalah...",
+                options: ["5", "10", "7.5", "8"],
+                answer: 0
+            },
+            {
+                question: "Negara yang dijuluki 'Negeri Matahari Terbit' adalah...",
+                options: ["China", "Jepang", "Korea Selatan", "Thailand"],
+                answer: 1
+            },
+            {
+                question: "Penemu lampu pijar adalah...",
+                options: ["Alexander Graham Bell", "Thomas Alva Edison", "Albert Einstein", "Nikola Tesla"],
+                answer: 1
+            },
+            {
+                question: "Rumus kimia untuk garam dapur adalah...",
+                options: ["H2O", "CO2", "NaCl", "HCl"],
+                answer: 2
+            },
+            {
+                question: "Ibu kota negara Australia adalah...",
+                options: ["Sydney", "Melbourne", "Canberra", "Perth"],
+                answer: 2
+            },
+            {
+                question: "Pahlawan nasional Indonesia yang dikenal dengan sebutan 'Bapak Proklamasi' adalah...",
+                options: ["Soekarno", "Mohammad Hatta", "Sutan Sjahrir", "Bung Tomo"],
+                answer: 0
+            },
+            {
+                question: "Dalam segitiga siku-siku, sisi terpanjang disebut...",
+                options: ["Alas", "Tinggi", "Hipotenusa", "Diagonal"],
+                answer: 2
+            },
+            {
+                question: "Proses pembuatan makanan pada tumbuhan disebut...",
+                options: ["Respirasi", "Fotosintesis", "Fermentasi", "Transpirasi"],
+                answer: 1
+            },
+            {
+                question: "Penulis novel 'Laskar Pelangi' adalah...",
+                options: ["Andrea Hirata", "Tere Liye", "Dee Lestari", "Pramoedya Ananta Toer"],
+                answer: 0
+            },
+            {
+                question: "Kitab suci agama Hindu adalah...",
+                options: ["Al-Quran", "Tripitaka", "Wedha", "Bibel"],
+                answer: 2
+            },
+            {
+                question: "Bilangan prima terkecil antara 10 dan 20 adalah...",
+                options: ["11", "13", "17", "19"],
+                answer: 0
+            },
+            {
+                question: "Penyebab utama terjadinya siang dan malam adalah...",
+                options: ["Revolusi Bumi", "Rotasi Bumi", "Revolusi Bulan", "Perubahan musim"],
+                answer: 1
+            },
+            {
+                question: "Tokoh yang memimpin Perang Diponegoro adalah...",
+                options: ["Pangeran Antasari", "Pangeran Diponegoro", "Tuanku Imam Bonjol", "Cut Nyak Dien"],
+                answer: 1
+            },
+            {
+                question: "15% dari 200 adalah...",
+                options: ["15", "30", "45", "60"],
+                answer: 1
+            },
+            {
+                question: "Pengertian dari demokrasi adalah...",
+                options: [
+                    "Pemerintahan oleh raja",
+                    "Pemerintahan oleh rakyat",
+                    "Pemerintahan oleh militer",
+                    "Pemerintahan oleh elit"
+                ],
+                answer: 1
+            },
+            {
+                question: "Yang termasuk karya sastra berbentuk puisi adalah...",
+                options: ["Novel", "Cerpen", "Soneta", "Drama"],
+                answer: 2
+            },
+            {
+                question: "Simbol kimia untuk emas adalah...",
+                options: ["Ag", "Fe", "Au", "Hg"],
+                answer: 2
+            },
+            {
+                question: "Penemu telepon adalah...",
+                options: ["Thomas Edison", "Alexander Graham Bell", "Guglielmo Marconi", "Antonie van Leeuwenhoek"],
+                answer: 1
+            },
+            {
+                question: "Organ tubuh manusia yang berfungsi untuk menyaring darah adalah...",
+                options: ["Jantung", "Paru-paru", "Ginjal", "Hati"],
+                answer: 2
+            },
+            {
+                question: "Kota di Indonesia yang dijuluki 'Kota Pendidikan' adalah...",
+                options: ["Bandung", "Yogyakarta", "Malang", "Surabaya"],
+                answer: 1
+            }
+        ];
+
+        // Game variables
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timer;
+        let timeLeft;
+        let selectedAnswer = null;
+
+        // DOM elements
+        const questionNumberEl = document.getElementById('questionNumber');
+        const questionTextEl = document.getElementById('questionText');
+        const optionsContainerEl = document.getElementById('optionsContainer');
+        const nextBtnEl = document.getElementById('nextBtn');
+        const timerEl = document.getElementById('timer');
+        const questionContainerEl = document.getElementById('questionContainer');
+        const scoreContainerEl = document.getElementById('scoreContainer');
+        const finalScoreEl = document.getElementById('finalScore');
+        const restartBtnEl = document.getElementById('restartBtn');
+
+        // Initialize game
+        function startGame() {
+            currentQuestionIndex = 0;
+            score = 0;
+            showQuestion();
+        }
+
+        // Display question
+        function showQuestion() {
+            resetState();
+            
+            const currentQuestion = questions[currentQuestionIndex];
+            questionNumberEl.textContent = currentQuestionIndex + 1;
+            questionTextEl.textContent = currentQuestion.question;
+            
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.classList.add('option-btn');
+                button.textContent = option;
+                button.addEventListener('click', () => selectAnswer(index));
+                optionsContainerEl.appendChild(button);
+            });
+            
+            startTimer();
+        }
+
+        // Reset question state
+        function resetState() {
+            selectedAnswer = null;
+            nextBtnEl.style.display = 'none';
+            
+            while (optionsContainerEl.firstChild) {
+                optionsContainerEl.removeChild(optionsContainerEl.firstChild);
+            }
+            
+            // Reset timer width
+            timerEl.style.width = '100%';
+        }
+
+        // Start timer for current question
+        function startTimer() {
+            timeLeft = 20;
+            timerEl.style.width = '100%';
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                timerEl.style.width = `${(timeLeft / 20) * 100}%`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    checkAnswer(-1); // -1 means time's up
+                }
+            }, 1000);
+        }
+
+        // Select answer
+        function selectAnswer(index) {
+            if (selectedAnswer !== null) return;
+            
+            selectedAnswer = index;
+            clearInterval(timer);
+            checkAnswer(index);
+        }
+
+        // Check answer
+        function checkAnswer(index) {
+            const currentQuestion = questions[currentQuestionIndex];
+            const isCorrect = index === currentQuestion.answer;
+            
+            if (isCorrect) {
+                score += 5; // 5 points per correct answer
+            }
+            
+            // Highlight correct answer
+            const optionButtons = optionsContainerEl.querySelectorAll('.option-btn');
+            optionButtons[currentQuestion.answer].classList.add('correct');
+            
+            // Highlight wrong answer if selected
+            if (index !== -1 && index !== currentQuestion.answer) {
+                optionButtons[index].classList.add('incorrect');
+            }
+            
+            nextBtnEl.style.display = 'block';
+        }
+
+        // Show final score
+        function showScore() {
+            questionContainerEl.style.display = 'none';
+            scoreContainerEl.style.display = 'block';
+            
+            const percentage = (score / 100) * 100;
+            finalScoreEl.textContent = percentage === 100 ? '💯' : `${score}`;
+            
+            // Animate score display
+            let currentScore = 0;
+            const scoreInterval = setInterval(() => {
+                currentScore += 5;
+                finalScoreEl.textContent = currentScore === 100 ? '💯' : `${currentScore}`;
+                
+                if (currentScore >= score) {
+                    clearInterval(scoreInterval);
+                }
+            }, 100);
+        }
+
+        // Next question
+        function nextQuestion() {
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+            } else {
+                showScore();
+            }
+        }
+
+        // Event listeners
+        nextBtnEl.addEventListener('click', nextQuestion);
+        restartBtnEl.addEventListener('click', () => {
+            scoreContainerEl.style.display = 'none';
+            questionContainerEl.style.display = 'block';
+            startGame();
+        });
+
+        // Start the game
+        startGame();
+    </script>
+</body>
+</html>
+
